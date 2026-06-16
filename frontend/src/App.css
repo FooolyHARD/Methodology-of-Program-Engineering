@@ -1,0 +1,146 @@
+.app-shell {
+  min-height: 100vh;
+}
+
+.topbar {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #17211e !important;
+  border-bottom: 1px solid #dce3e1;
+  backdrop-filter: blur(12px);
+}
+
+.toolbar {
+  min-height: 68px !important;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #205b4b;
+}
+
+.role-select {
+  width: 184px;
+  background: #ffffff;
+}
+
+.main {
+  padding-top: 24px;
+  padding-bottom: 40px;
+}
+
+.alert {
+  margin-bottom: 16px;
+}
+
+.tabs-panel,
+.section,
+.metric {
+  border: 1px solid #dce3e1;
+}
+
+.tabs-panel {
+  margin-bottom: 20px;
+}
+
+.section {
+  padding: 18px;
+}
+
+.section h6 {
+  margin-bottom: 14px;
+}
+
+.metric {
+  padding: 18px;
+  min-height: 112px;
+}
+
+.metric p {
+  color: #596662;
+  margin-bottom: 10px;
+}
+
+.metric h5 {
+  color: #17211e;
+}
+
+.flow {
+  margin-top: 16px;
+}
+
+.flow-step {
+  flex: 1;
+  min-width: 160px;
+  border: 1px solid #dce3e1;
+  border-radius: 6px;
+  padding: 14px;
+  background: #fafbfb;
+}
+
+.flow-step p {
+  margin-bottom: 10px;
+  color: #596662;
+}
+
+.cash-plan-scroll {
+  max-width: min(100%, 836px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+}
+
+.cash-plan-track {
+  width: max-content;
+  flex-wrap: nowrap !important;
+}
+
+.cash-plan-button {
+  width: 260px;
+  flex: 0 0 260px;
+  justify-content: flex-start !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  scroll-snap-align: start;
+}
+
+.cash-plan-button .MuiButton-startIcon,
+.cash-plan-button .MuiButton-endIcon {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .role-select {
+    width: 100%;
+  }
+
+  .section,
+  .metric {
+    padding: 14px;
+  }
+
+  .cash-plan-scroll {
+    max-width: 100%;
+  }
+
+  .cash-plan-button {
+    width: 230px;
+    flex-basis: 230px;
+  }
+}
