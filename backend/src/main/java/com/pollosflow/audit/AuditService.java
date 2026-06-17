@@ -1,6 +1,7 @@
 package com.pollosflow.audit;
 
 import com.pollosflow.common.Role;
+import com.pollosflow.messaging.AuditEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -10,9 +11,11 @@ import java.util.UUID;
 @Service
 public class AuditService {
     private final AuditEventRepository repository;
+    private final AuditEventPublisher publisher;
 
-    public AuditService(AuditEventRepository repository) {
+    public AuditService(AuditEventRepository repository, AuditEventPublisher publisher) {
         this.repository = repository;
+        this.publisher = publisher;
     }
 
     public void record(Role role, String action, String entityType, UUID entityId, String details) {
@@ -23,7 +26,8 @@ public class AuditService {
         event.setEntityType(entityType);
         event.setEntityId(entityId.toString());
         event.setDetails(details);
-        repository.save(event);
+        AuditEvent saved = repository.save(event);
+        publisher.publish(saved);
     }
 
     public List<AuditEvent> latest() {
