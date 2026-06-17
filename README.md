@@ -15,7 +15,7 @@
 - Infra: Redis, RabbitMQ, Keycloak через `docker-compose.yml`.
 - Frontend: React, TypeScript, Yarn, Material UI.
 
-## Запуск с инфраструктурой из SRS/SDP
+## Запуск с инфраструктурой
 
 ```bash
 docker compose up -d postgres redis rabbitmq keycloak
