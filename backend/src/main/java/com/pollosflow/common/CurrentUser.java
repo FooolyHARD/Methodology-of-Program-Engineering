@@ -1,23 +1,34 @@
 package com.pollosflow.common;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 @Component
 public class CurrentUser {
-    private final String roleHeader;
-
-    public CurrentUser(@Value("${pollosflow.security.demo-header:X-Demo-Role}") String roleHeader) {
-        this.roleHeader = roleHeader;
+    public Role role(HttpServletRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User is not authenticated");
+        }
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(authority -> authority.startsWith("ROLE_"))
+                .map(authority -> Role.valueOf(authority.substring("ROLE_".length())))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Authenticated user has no application role"));
     }
 
-    public Role role(HttpServletRequest request) {
-        String raw = request.getHeader(roleHeader);
-        if (raw == null || raw.isBlank()) {
-            return Role.OWNER;
+    public String username() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User is not authenticated");
         }
-        return Role.valueOf(raw.trim().toUpperCase());
+        return authentication.getName();
     }
 
     public void require(HttpServletRequest request, Role... allowed) {
@@ -27,6 +38,6 @@ public class CurrentUser {
                 return;
             }
         }
-        throw new IllegalStateException("Role " + actual + " is not allowed for this action");
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Action is not available for current role");
     }
 }

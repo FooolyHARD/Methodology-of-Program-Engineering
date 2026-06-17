@@ -5,6 +5,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -33,6 +34,14 @@ public class ApiExceptionHandler {
                 .findFirst()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .orElse("Payload is invalid"));
+        return detail;
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    ProblemDetail responseStatus(ResponseStatusException ex) {
+        ProblemDetail detail = ProblemDetail.forStatus(ex.getStatusCode());
+        detail.setTitle("Request rejected");
+        detail.setDetail(ex.getReason());
         return detail;
     }
 

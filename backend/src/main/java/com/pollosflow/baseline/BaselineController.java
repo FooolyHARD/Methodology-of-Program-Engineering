@@ -52,10 +52,8 @@ public class BaselineController {
     @Transactional
     public BaselineResponse create(@Valid @RequestBody CreateRestaurantRequest request,
                                    HttpServletRequest httpRequest) {
+        currentUser.require(httpRequest, Role.OWNER, Role.ADMIN);
         Role role = currentUser.role(httpRequest);
-        if (role != Role.ADMIN && role != Role.OWNER) {
-            throw new IllegalStateException("Only owner or admin can register restaurants");
-        }
 
         Restaurant restaurant = new Restaurant();
         restaurant.setName(request.name().trim());
@@ -80,10 +78,8 @@ public class BaselineController {
     public BaselineResponse update(@PathVariable UUID restaurantId,
                                    @Valid @RequestBody UpdateBaselineRequest request,
                                    HttpServletRequest httpRequest) {
+        currentUser.require(httpRequest, Role.OWNER, Role.ADMIN);
         Role role = currentUser.role(httpRequest);
-        if (role != Role.ADMIN && role != Role.OWNER) {
-            throw new IllegalStateException("Only owner or admin can update restaurant baselines");
-        }
 
         RestaurantBaseline baseline = repository.findByRestaurantId(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant baseline not found"));
