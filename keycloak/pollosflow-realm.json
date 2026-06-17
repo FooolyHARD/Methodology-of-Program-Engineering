@@ -1,0 +1,118 @@
+{
+  "realm": "pollosflow",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      { "name": "OWNER" },
+      { "name": "ADMIN" },
+      { "name": "AUTHORIZED_USER" },
+      { "name": "ACCOUNTANT" },
+      { "name": "CASHIER" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "pollosflow-frontend",
+      "name": "PollosFlow Frontend",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "http://127.0.0.1:5173/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "owner",
+      "email": "owner@pollosflow.local",
+      "firstName": "Owner",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "owner123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["OWNER"]
+    },
+    {
+      "username": "admin",
+      "email": "admin@pollosflow.local",
+      "firstName": "Admin",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "authorized",
+      "email": "authorized@pollosflow.local",
+      "firstName": "Authorized",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "authorized123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["AUTHORIZED_USER"]
+    },
+    {
+      "username": "cashier",
+      "email": "cashier@pollosflow.local",
+      "firstName": "Cashier",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cashier123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["CASHIER"]
+    },
+    {
+      "username": "accountant",
+      "email": "accountant@pollosflow.local",
+      "firstName": "Accountant",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "accountant123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ACCOUNTANT"]
+    }
+  ]
+}
