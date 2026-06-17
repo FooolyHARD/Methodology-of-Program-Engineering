@@ -44,6 +44,10 @@ import {
 import './App.css'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL ?? 'http://localhost:8081'
+const KEYCLOAK_REALM = import.meta.env.VITE_KEYCLOAK_REALM ?? 'pollosflow'
+const KEYCLOAK_CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID ?? 'pollosflow-frontend'
+const TOKEN_STORAGE_KEY = 'pollosflow.accessToken'
 
 type Role = 'ADMIN' | 'OWNER' | 'AUTHORIZED_USER' | 'ACCOUNTANT' | 'CASHIER'
 type IntakeStatus =
@@ -204,6 +208,7 @@ function canManageUsers(role: Role) {
 
 function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem(TOKEN_STORAGE_KEY) ?? '')
   const [tab, setTab] = useState<TabKey>('overview')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -234,16 +239,23 @@ function App() {
     [plans],
   )
 
-  async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
+  async function api<T>(path: string, options: RequestInit = {}, tokenOverride?: string): Promise<T> {
+    const token = tokenOverride ?? authToken
     const response = await fetch(`${API_URL}${path}`, {
       ...options,
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(options.headers ?? {}),
       },
     })
     if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem(TOKEN_STORAGE_KEY)
+        setAuthToken('')
+        setCurrentUser(null)
+      }
       const body = await response.json().catch(() => null)
       throw new Error(body?.detail ?? body?.title ?? `HTTP ${response.status}`)
     }
@@ -281,11 +293,19 @@ function App() {
   }
 
   useEffect(() => {
-    api<AuthUser>('/api/auth/me')
+    if (!authToken) {
+      setCurrentUser(null)
+      return
+    }
+    api<AuthUser>('/api/auth/me', {}, authToken)
       .then(setCurrentUser)
-      .catch(() => setCurrentUser(null))
+      .catch(() => {
+        localStorage.removeItem(TOKEN_STORAGE_KEY)
+        setAuthToken('')
+        setCurrentUser(null)
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [authToken])
 
   useEffect(() => {
     if (currentUser) {
@@ -304,10 +324,24 @@ function App() {
     setLoading(true)
     setError('')
     try {
-      const user = await api<AuthUser>('/api/auth/login', {
+      const formData = new URLSearchParams()
+      formData.set('grant_type', 'password')
+      formData.set('client_id', KEYCLOAK_CLIENT_ID)
+      formData.set('username', loginForm.username)
+      formData.set('password', loginForm.password)
+      const tokenResponse = await fetch(`${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`, {
         method: 'POST',
-        body: JSON.stringify(loginForm),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData,
       })
+      if (!tokenResponse.ok) {
+        const body = await tokenResponse.json().catch(() => null)
+        throw new Error(body?.error_description ?? 'Invalid username or password')
+      }
+      const tokenBody = (await tokenResponse.json()) as { access_token: string }
+      localStorage.setItem(TOKEN_STORAGE_KEY, tokenBody.access_token)
+      setAuthToken(tokenBody.access_token)
+      const user = await api<AuthUser>('/api/auth/me', {}, tokenBody.access_token)
       setCurrentUser(user)
       setTab('overview')
     } catch (err) {
@@ -317,7 +351,13 @@ function App() {
   }
 
   async function logout() {
-    await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' })
+    await fetch(`${API_URL}/api/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+    }).catch(() => undefined)
+    localStorage.removeItem(TOKEN_STORAGE_KEY)
+    setAuthToken('')
     setCurrentUser(null)
     setDashboard(null)
     setIntakes([])
