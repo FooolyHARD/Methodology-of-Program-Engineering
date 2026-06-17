@@ -14,11 +14,14 @@ public class UserService {
     private final AppUserRepository users;
     private final PasswordEncoder passwordEncoder;
     private final AuditService audit;
+    private final KeycloakAdminClient keycloak;
 
-    public UserService(AppUserRepository users, PasswordEncoder passwordEncoder, AuditService audit) {
+    public UserService(AppUserRepository users, PasswordEncoder passwordEncoder, AuditService audit,
+                       KeycloakAdminClient keycloak) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.audit = audit;
+        this.keycloak = keycloak;
     }
 
     public AppUser create(UserDtos.CreateUserRequest request, Role actorRole) {
@@ -26,6 +29,7 @@ public class UserService {
         if (users.existsByUsernameIgnoreCase(username)) {
             throw new IllegalArgumentException("Username already exists");
         }
+        keycloak.createUser(username, request.password(), request.role());
 
         AppUser user = new AppUser();
         user.setUsername(username);
@@ -51,6 +55,7 @@ public class UserService {
         }
         user.setEnabled(enabled);
         AppUser saved = users.save(user);
+        keycloak.setUserEnabled(saved.getUsername(), enabled);
         audit.record(actorRole, enabled ? "USER_ENABLED" : "USER_DISABLED", "app_user", saved.getId(),
                 (enabled ? "Enabled account " : "Disabled account ") + saved.getUsername());
         return saved;
